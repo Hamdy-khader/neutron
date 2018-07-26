@@ -112,6 +112,8 @@ class PluginApi(object):
         1.4 - tunnel_sync rpc signature upgrade to obtain 'host'
         1.5 - Support update_device_list and
               get_devices_details_list_and_failed_devices
+        1.6 - Support get_network_details
+        1.7 - Support get_ports_by_vnic_type_and_host
     '''
 
     def __init__(self, topic):
@@ -186,6 +188,11 @@ class PluginApi(object):
         cctxt = self.client.prepare(version='1.4')
         return cctxt.call(context, 'tunnel_sync', tunnel_ip=tunnel_ip,
                           tunnel_type=tunnel_type, host=host)
+
+    def get_ports_by_vnic_type_and_host(self, context, vnic_type, host):
+        cctxt = self.client.prepare(version='1.7')
+        return cctxt.call(context, 'get_ports_by_vnic_type_and_host',
+                          vnic_type=vnic_type, host=host)
 
 
 def create_cache_for_l2_agent():
@@ -338,6 +345,7 @@ class CacheBackedPluginApi(PluginApi):
                                    dialect=netaddr.mac_unix_expanded))
         entry = {
             'device': device,
+            'device_id': port_obj.device_id,
             'network_id': port_obj.network_id,
             'port_id': port_obj.id,
             'mac_address': mac_addr,
@@ -357,6 +365,8 @@ class CacheBackedPluginApi(PluginApi):
             'qos_policy_id': port_obj.qos_policy_id,
             'network_qos_policy_id': net_qos_policy_id,
             'profile': binding.profile,
+            'vif_type': binding.vif_type,
+            'vnic_type': binding.vnic_type,
             'security_groups': list(port_obj.security_group_ids)
         }
         LOG.debug("Returning: %s", entry)

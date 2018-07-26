@@ -53,7 +53,9 @@ class RpcCallbacks(type_tunnel.TunnelRpcCallbackMixin):
     #   1.4 tunnel_sync rpc signature upgrade to obtain 'host'
     #   1.5 Support update_device_list and
     #       get_devices_details_list_and_failed_devices
-    target = oslo_messaging.Target(version='1.5')
+    #   1.6 Support get_network_details
+    #   1.7 Support get_ports_by_vnic_type_and_host
+    target = oslo_messaging.Target(version='1.7')
 
     def __init__(self, notifier, type_manager):
         self.setup_tunnel_callback_mixin(notifier, type_manager)
@@ -392,6 +394,11 @@ class RpcCallbacks(type_tunnel.TunnelRpcCallbackMixin):
                 'failed_devices_up': failed_devices_up,
                 'devices_down': devices_down,
                 'failed_devices_down': failed_devices_down}
+
+    def get_ports_by_vnic_type_and_host(self, rpc_context, vnic_type, host):
+        plugin = directory.get_plugin()
+        return plugin.get_ports_by_vnic_type_and_host(
+            rpc_context, vnic_type=vnic_type, host=host)
 
 
 class AgentNotifierApi(dvr_rpc.DVRAgentRpcApiMixin,
